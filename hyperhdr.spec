@@ -27,6 +27,8 @@ BuildRequires:  flatbuffers-compiler
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  desktop-file-utils
 
+Requires:       hicolor-icon-theme
+
 Provides:       bundled(mdns) = 1.4.2
 
 %description
