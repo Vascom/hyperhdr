@@ -1,6 +1,6 @@
 Name:           hyperhdr
 Version:        19.0.0.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Ambient lighting
 
 License:        MIT
@@ -26,6 +26,8 @@ BuildRequires:  cmake(flatbuffers)
 BuildRequires:  flatbuffers-compiler
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  desktop-file-utils
+
+Provides:       bundled(mdns) = 1.4.2
 
 %description
 Open source ambient lighting implementation for television sets based on the
@@ -55,7 +57,7 @@ sed -i  -e 's|file(DOWNLOAD "https://raw.githubusercontent.com/mjansson/mdns/${M
 
 %install
 %cmake_install
-mkdir -p %{buildroot}/usr/share/hyperhdr/lut/
+mkdir -p %{buildroot}%{datadir}/%{name}/lut/
 tar -xf resources/lut/lut_lin_tables.tar.xz -C %{buildroot}%{_datadir}/%{name}/lut/
 
 %check
@@ -79,5 +81,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/*/apps/*.png
 
 %changelog
+* Thu Mar 02 2023 Vasiliy Glazov <vascom2@gmail.com> - 19.0.0.0-2
+- Drop i686 builds
+- Add bundled provides
+
 * Tue Feb 28 2023 Vasiliy Glazov <vascom2@gmail.com> - 19.0.0.0-1
 - Initial packaging for Fedora
