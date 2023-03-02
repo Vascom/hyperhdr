@@ -9,6 +9,9 @@ Source0:        %{url}/archive/refs/tags/v%{version}/%{name}-%{version}.tar.gz
 Source1:        https://raw.githubusercontent.com/mjansson/mdns/1.4.2/mdns.h
 Patch0:         fix.patch
 
+# https://fedoraproject.org/wiki/Changes/EncourageI686LeafRemoval
+ExcludeArch:    %{ix86}
+
 BuildRequires:  gcc-c++
 BuildRequires:  ninja-build
 BuildRequires:  pkgconfig
@@ -43,7 +46,8 @@ sed -i  -e 's|file(DOWNLOAD "https://raw.githubusercontent.com/mjansson/mdns/${M
     -DUSE_SYSTEM_FLATBUFFERS_LIBS:BOOL=ON \
     -DUSE_SYSTEM_MBEDTLS_LIBS:BOOL=ON \
     -DENABLE_MQTT:BOOL=OFF \
-    -DBUILD_SHARED_LIBS:BOOL=OFF
+    -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -DPLATFORM=linux
 
 %build
 %cmake_build
