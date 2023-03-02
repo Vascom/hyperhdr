@@ -57,7 +57,7 @@ sed -i  -e 's|file(DOWNLOAD "https://raw.githubusercontent.com/mjansson/mdns/${M
 
 %install
 %cmake_install
-mkdir -p %{buildroot}%{datadir}/%{name}/lut/
+mkdir -p %{buildroot}%{_datadir}/%{name}/lut/
 tar -xf resources/lut/lut_lin_tables.tar.xz -C %{buildroot}%{_datadir}/%{name}/lut/
 
 %check
