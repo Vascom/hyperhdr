@@ -1,0 +1,393 @@
+diff -uNdr HyperHDR-19.0.0.0_orig/cmake/debian/service/hyperhdr.systemd HyperHDR-19.0.0.0_new/cmake/debian/service/hyperhdr.systemd
+--- HyperHDR-19.0.0.0_orig/cmake/debian/service/hyperhdr.systemd	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/cmake/debian/service/hyperhdr.systemd	2023-03-02 10:57:51.400963373 +0300
+@@ -1,15 +1,16 @@
+ [Unit]
+-Description=HyperHdr ambient light systemd service  for user %i
++Description=HyperHdr ambient light systemd service
+ After=network.target
+ 
+ [Service]
+ ExecStart=/usr/bin/hyperhdr
+-WorkingDirectory=/usr/share/hyperhdr/bin
+-User=%i
+ TimeoutStopSec=5
+ KillMode=mixed
+ Restart=on-failure
+ RestartSec=2
++NoNewPrivileges=yes
++ProtectControlGroups=yes
++RestrictNamespaces=yes
+ 
+ [Install]
+-WantedBy=multi-user.target
++WantedBy=default.target
+diff -uNdr HyperHDR-19.0.0.0_orig/cmake/Dependencies.cmake HyperHDR-19.0.0.0_new/cmake/Dependencies.cmake
+--- HyperHDR-19.0.0.0_orig/cmake/Dependencies.cmake	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/cmake/Dependencies.cmake	2023-03-02 11:12:49.854396460 +0300
+@@ -234,10 +234,10 @@
+ 		if (LIBSMARTX11)
+ 			SET(resolved_file ${LIBSMARTX11})		
+ 			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
++			gp_append_unique(PREREQUISITE_LIBSZ ${resolved_file})
+ 			message(STATUS "Adding smartX11: ${resolved_file}")		
+ 			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
++			gp_append_unique(PREREQUISITE_LIBSZ ${file_canonical})
+ 			message(STATUS "Added smartX11(2): ${file_canonical}")
+ 		endif()
+ 
+@@ -250,10 +250,10 @@
+ 		if (LIBSMARTPIPEWIRE)
+ 			SET(resolved_file ${LIBSMARTPIPEWIRE})
+ 			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
++			gp_append_unique(PREREQUISITE_LIBSZ ${resolved_file})
+ 			message(STATUS "Adding smartPipewire: ${resolved_file}")		
+ 			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
++			gp_append_unique(PREREQUISITE_LIBSZ ${file_canonical})
+ 			message(STATUS "Added smartPipewire(2): ${file_canonical}")
+ 		endif()
+ 		
+@@ -266,16 +266,16 @@
+ 		if (LIBSMARTCEC)
+ 			SET(resolved_file ${LIBSMARTCEC})
+ 			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
++			gp_append_unique(PREREQUISITE_LIBSZ ${resolved_file})
+ 			message(STATUS "Adding CEC: ${resolved_file}")
+ 			set(resolved_file "${resolved_file}.6")
+ 			if(EXISTS ${resolved_file})
+ 				get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-				gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
++				gp_append_unique(PREREQUISITE_LIBSZ ${resolved_file})
+ 				message(STATUS "Adding CEC(2): ${resolved_file}")
+ 			endif()
+ 			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
++			gp_append_unique(PREREQUISITE_LIBSZ ${file_canonical})
+ 			message(STATUS "Added CEC(3): ${file_canonical}")
+ 		endif()
+ 		
+@@ -328,143 +328,18 @@
+ 			message(STATUS "Added CEC support: ${file_canonical}")
+ 		endif()		
+ 		
+-		if ( GLD )
+-			SET(resolved_file ${GLD})
+-			message(STATUS "Adding GLD: ${resolved_file}")
+-			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
+-			message(STATUS "Added GLD: ${resolved_file}")
+-			set(resolved_file0 "${resolved_file}.0")
+-			if(EXISTS ${resolved_file0})
+-				message(STATUS "Adding GLD0: ${resolved_file0}")
+-				get_filename_component(resolved_file0 ${resolved_file0} ABSOLUTE)
+-				gp_append_unique(PREREQUISITE_LIBS ${resolved_file0})
+-				message(STATUS "Added GLD0: ${resolved_file0}")
+-			endif()
+-			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
+-			message(STATUS "Added GLD: ${file_canonical}")
+-		endif()
+-
+-		
+-		find_library(LIB_XCB
+-			NAMES libxcb libxcb.so
+-		)
+-
+-		if(LIB_XCB)
+-			message(STATUS "libXCB found ${LIB_XCB}")
+-			SET(resolved_file ${LIB_XCB})
+-			message(STATUS "Adding libXCB: ${resolved_file}")
+-			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
+-			message(STATUS "Added libXCB: ${resolved_file}")
+-			set(resolved_file1 "${resolved_file}.1")
+-			if(EXISTS ${resolved_file1})
+-				message(STATUS "Adding libXCB1: ${resolved_file1}")
+-				get_filename_component(resolved_file1 ${resolved_file1} ABSOLUTE)
+-				gp_append_unique(PREREQUISITE_LIBS ${resolved_file1})
+-				message(STATUS "Added libXCB1: ${resolved_file1}")
+-			endif()
+-			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
+-			message(STATUS "Added: ${file_canonical}")
+-		else()
+-			message(STATUS "libXCB not found")
+-		endif()
+-		
+-		find_library(LIB_GLX
+-			NAMES libGLX libGLX.so		
+-		)
+-				
+-		if(LIB_GLX)
+-			message(STATUS "libGLX found ${LIB_GLX}")
+-			SET(resolved_file ${LIB_GLX})
+-			message(STATUS "Adding LIB_GLX: ${resolved_file}")
+-			get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-			gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
+-			message(STATUS "Added LIB_GLX: ${resolved_file}")
+-			set(resolved_file0 "${resolved_file}.0")
+-			if(EXISTS ${resolved_file0})
+-				message(STATUS "Adding LIB_GLX0: ${resolved_file0}")
+-				get_filename_component(resolved_file0 ${resolved_file0} ABSOLUTE)
+-				gp_append_unique(PREREQUISITE_LIBS ${resolved_file0})
+-				message(STATUS "Added LIB_GLX0: ${resolved_file0}")
+-			endif()
+-			get_filename_component(file_canonical ${resolved_file} REALPATH)
+-			gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
+-			message(STATUS "Added: ${file_canonical}")
+-		else()
+-			message(STATUS "libGLX not found")
+-		endif()
+ 
+-		# Copy Qt plugins to 'share/hyperhdr/lib'
+-		if(QT_PLUGINS_DIR)
+-			foreach(PLUGIN "platforms" "sqldrivers" "imageformats")
+-				if(EXISTS ${QT_PLUGINS_DIR}/${PLUGIN})
+-					file(GLOB files "${QT_PLUGINS_DIR}/${PLUGIN}/*")
+-					foreach(file ${files})
+-						if (NOT CMAKE_CROSSCOMPILING)
+-							get_prerequisites(${file} PLUGINS 0 1 "" "")
+-						endif()
+-
+-						foreach(DEPENDENCY ${PLUGINS})
+-							get_filename_component(resolved ${DEPENDENCY} NAME_WE)
+-							
+-							foreach(myitem ${SYSTEM_LIBS_SKIP})
+-									#message(STATUS "Checking ${myitem}")
+-									string(FIND ${myitem} ${resolved} _index)
+-									if (${_index} GREATER -1)
+-										#message(STATUS "${myitem} = ${resolved}")									
+-										break()									
+-									endif()
+-							endforeach()
+-								
+-							if (${_index} GREATER -1)
+-								#message(STATUS "QT skipped: ${resolved}")
+-								continue() # Skip system libraries
+-							else()						
+-								#message(STATUS "QT included: ${resolved}")
+-								gp_resolve_item("${file}" "${DEPENDENCY}" "" "" resolved_file)
+-								get_filename_component(resolved_file ${resolved_file} ABSOLUTE)
+-								gp_append_unique(PREREQUISITE_LIBS ${resolved_file})
+-								get_filename_component(file_canonical ${resolved_file} REALPATH)
+-								gp_append_unique(PREREQUISITE_LIBS ${file_canonical})
+-								#message(STATUS "QT added: ${resolved_file}")
+-							endif()
+-						endforeach()
+-
+-						install(
+-							FILES ${file}
+-							DESTINATION "share/hyperhdr/lib/${PLUGIN}"
+-							COMPONENT "HyperHDR"
+-						)
+-					endforeach()
+-				endif()
+-			endforeach()
+-		endif(QT_PLUGINS_DIR)
+-
+-		# Create a qt.conf file in 'share/hyperhdr/bin' to override hard-coded search paths in Qt plugins
+-		file(WRITE "${CMAKE_BINARY_DIR}/qt.conf" "[Paths]\nPlugins=../lib/\n")
+-		install(
+-			FILES "${CMAKE_BINARY_DIR}/qt.conf"
+-			DESTINATION "share/hyperhdr/bin"
+-			COMPONENT "HyperHDR"
+-		)
+-
+-		# Copy dependencies to 'share/hyperhdr/lib'
+-		foreach(PREREQUISITE_LIB ${PREREQUISITE_LIBS})
+-			message("Installing: " ${PREREQUISITE_LIB})
++	# Copy dependencies to ''
++		foreach(PREREQUISITE_LIB ${PREREQUISITE_LIBSZ})
++			message("Installing: " ${PREREQUISITE_LIBZ})
+ 			install(
+-				FILES ${PREREQUISITE_LIB}
+-				DESTINATION "share/hyperhdr/lib"
++				PROGRAMS ${PREREQUISITE_LIB}
++				DESTINATION "lib64"
+ 				COMPONENT "HyperHDR"
+ 			)
+ 		endforeach()
+ 		
+-		# install LUT		
+-		install(FILES "${PROJECT_SOURCE_DIR}/resources/lut/lut_lin_tables.tar.xz" DESTINATION "share/hyperhdr/lut" COMPONENT "HyperHDR")
+-		install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "share/hyperhdr" COMPONENT "HyperHDR")
+-		install(FILES "${PROJECT_SOURCE_DIR}/3RD_PARTY_LICENSES" DESTINATION "share/hyperhdr" COMPONENT "HyperHDR")
++
+ 	else()
+ 		# Run CMake after target was built to run get_prerequisites on ${TARGET_FILE}
+ 		add_custom_command(
+@@ -504,82 +379,6 @@
+ 		separate_arguments(DEPENDENCIES WINDOWS_COMMAND ${DEPS})
+ 		string(REPLACE "\\" "/" DEPENDENCIES "${DEPENDENCIES}")
+ 
+-		# Copy dependencies to 'hyperhdr/lib' or 'hyperhdr'
+-		while (DEPENDENCIES)
+-			list(GET DEPENDENCIES 0 src)
+-			list(GET DEPENDENCIES 1 dst)
+-			get_filename_component(dst ${dst} DIRECTORY)
+-
+-			if (NOT "${dst}" STREQUAL "")
+-				install(
+-					FILES ${src}
+-					DESTINATION "lib/${dst}"
+-					COMPONENT "HyperHDR"
+-				)
+-			else()
+-				install(
+-					FILES ${src}
+-					DESTINATION "bin"
+-					COMPONENT "HyperHDR"
+-				)
+-			endif()
+-
+-			list(REMOVE_AT DEPENDENCIES 0 1)
+-		endwhile()
+-
+-		# Copy TurboJPEG Libs
+-		if (ENABLE_MF)
+-			find_file(TurboJPEG_DLL
+-				NAMES "turbojpeg.dll" "jpeg62.dll"
+-				PATHS "${TURBOJPEG_LIBRARY_DIRS}"
+-				NO_DEFAULT_PATH
+-				REQUIRED
+-			)
+-					
+-			if(NOT CMAKE_GITHUB_ACTION)
+-				get_filename_component(JPEG_RUNTIME_TARGET ${TARGET_FILE} DIRECTORY)
+-				execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TurboJPEG_DLL} ${JPEG_RUNTIME_TARGET})
+-			endif()
+-
+-			install(
+-				FILES ${TurboJPEG_DLL}
+-				DESTINATION "bin"
+-				COMPONENT "HyperHDR"
+-			)
+-		endif()
+-
+-		# Copy MQTT Libs
+-		if (ENABLE_MQTT)
+-			set (MQTT_TARGET_LIB_FOLDER ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE})
+-			message(${MQTT_TARGET_LIB_FOLDER})
+-			find_file(MQTT_DLL
+-				NAMES "qmqtt.dll"
+-				PATHS "${MQTT_TARGET_LIB_FOLDER}"
+-				NO_DEFAULT_PATH
+-				REQUIRED
+-			)
+-			message(${MQTT_DLL})
+-			if(NOT CMAKE_GITHUB_ACTION)
+-				get_filename_component(MQTT_RUNTIME_TARGET ${TARGET_FILE} DIRECTORY)
+-				execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MQTT_DLL} ${MQTT_RUNTIME_TARGET})
+-			endif()
+-
+-			install(
+-				FILES ${MQTT_DLL}
+-				DESTINATION "bin"
+-				COMPONENT "HyperHDR"
+-			)
+-		endif()
+-
+-
+-		# Create a qt.conf file in 'bin' to override hard-coded search paths in Qt plugins
+-		file(WRITE "${CMAKE_BINARY_DIR}/qt.conf" "[Paths]\nPlugins=../lib/\n")
+-		install(
+-			FILES "${CMAKE_BINARY_DIR}/qt.conf"
+-			DESTINATION "bin"
+-			COMPONENT "HyperHDR"
+-		)
+-
+ 		execute_process(
+ 			COMMAND ${SEVENZIP_BIN} e ${PROJECT_SOURCE_DIR}/resources/lut/lut_lin_tables.tar.xz -o${CMAKE_CURRENT_BINARY_DIR} -aoa -y
+ 			RESULT_VARIABLE STATUS
+diff -uNdr HyperHDR-19.0.0.0_orig/cmake/desktop/hyperhdr.desktop HyperHDR-19.0.0.0_new/cmake/desktop/hyperhdr.desktop
+--- HyperHDR-19.0.0.0_orig/cmake/desktop/hyperhdr.desktop	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/cmake/desktop/hyperhdr.desktop	2023-03-02 10:58:29.233908007 +0300
+@@ -2,7 +2,7 @@
+ Name=HyperHDR
+ GenericName=HyperHDR Ambient Lighting
+ Comment=HyperHDR mimics the well known Ambilight from Philips
+-Icon=/usr/share/pixmaps/hyperhdr/hyperhdr_128.png
++Icon=hyperhdr
+ Terminal=false
+ TryExec=hyperhdr
+ Exec=hyperhdr
+diff -uNdr HyperHDR-19.0.0.0_orig/CMakeLists.txt HyperHDR-19.0.0.0_new/CMakeLists.txt
+--- HyperHDR-19.0.0.0_orig/CMakeLists.txt	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/CMakeLists.txt	2023-03-02 10:46:32.032000510 +0300
+@@ -445,14 +445,6 @@
+ 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
+ endif()
+ 
+-# setup -rpath to search for shared libs in BINARY/../lib folder
+-if (UNIX AND NOT APPLE)
+-	SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+-	SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+-	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib")
+-	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+-endif ()
+-
+ # find Threads libs
+ find_package(Threads REQUIRED)
+ 
+diff -uNdr HyperHDR-19.0.0.0_orig/sources/hyperhdr/CMakeLists.txt HyperHDR-19.0.0.0_new/sources/hyperhdr/CMakeLists.txt
+--- HyperHDR-19.0.0.0_orig/sources/hyperhdr/CMakeLists.txt	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/sources/hyperhdr/CMakeLists.txt	2023-03-02 11:03:15.187047845 +0300
+@@ -130,13 +130,13 @@
+ if(APPLE)
+ 	install ( TARGETS hyperhdr DESTINATION "share/.." COMPONENT "HyperHDR" )	
+ elseif(NOT WIN32)
+-	install ( TARGETS hyperhdr DESTINATION "share/hyperhdr/bin" COMPONENT "HyperHDR" )
+-	install ( DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/debian/service DESTINATION "share/hyperhdr/" COMPONENT "HyperHDR" )
+-	install ( FILES ${CMAKE_SOURCE_DIR}/resources/icons/hyperhdr-icon-32px.png DESTINATION "share/hyperhdr/icons" COMPONENT "HyperHDR" )
++	install ( TARGETS hyperhdr DESTINATION "bin" COMPONENT "HyperHDR" )
++    install ( FILES ${CMAKE_SOURCE_DIR}/resources/icons/hyperhdr-icon-32px.png DESTINATION "share/icons/hicolor/32x32/apps" RENAME "hyperhdr.png" COMPONENT "HyperHDR" )
++    install ( FILES ${CMAKE_SOURCE_DIR}/cmake/debian/service/hyperhdr.systemd DESTINATION "lib/systemd/user" RENAME "hyperhdr.service" COMPONENT "HyperHDR" )
+ 
+ 	# Desktop file for hyperhdr
+-	install ( FILES ${CMAKE_SOURCE_DIR}/cmake/desktop/hyperhdr_128.png DESTINATION "share/hyperhdr/desktop" COMPONENT "HyperHDR" )
+-	install ( FILES ${CMAKE_SOURCE_DIR}/cmake/desktop/hyperhdr.desktop DESTINATION "share/hyperhdr/desktop" COMPONENT "HyperHDR" )
++	install ( FILES ${CMAKE_SOURCE_DIR}/cmake/desktop/hyperhdr_128.png DESTINATION "share/icons/hicolor/128x128/apps" RENAME "hyperhdr.png" COMPONENT "HyperHDR" )
++    install ( FILES ${CMAKE_SOURCE_DIR}/cmake/desktop/hyperhdr.desktop DESTINATION "share/applications" COMPONENT "HyperHDR" )
+ else()
+ 	install ( TARGETS hyperhdr DESTINATION "bin" COMPONENT "HyperHDR" )
+ 
+@@ -145,12 +145,6 @@
+ 	include( InstallRequiredSystemLibraries )
+ endif()
+ 
+-if(CMAKE_HOST_UNIX AND NOT APPLE)
+-	install( CODE "EXECUTE_PROCESS(COMMAND ln -sf \"../share/hyperhdr/bin/hyperhdr\" \"${CMAKE_BINARY_DIR}/symlink_hyperhdr\" )" COMPONENT "HyperHDR" )
+-	install( FILES ${CMAKE_BINARY_DIR}/symlink_hyperhdr DESTINATION "bin" RENAME hyperhdr COMPONENT "HyperHDR" )
+-	install( CODE "FILE (REMOVE ${CMAKE_BINARY_DIR}/symlink_hyperhdr )" COMPONENT "HyperHDR" )
+-endif()
+-
+ # Copy dependencies (not for OSX)
+ include(${CMAKE_SOURCE_DIR}/cmake/Dependencies.cmake)
+ 
+diff -uNdr HyperHDR-19.0.0.0_orig/sources/hyperhdr-remote/CMakeLists.txt HyperHDR-19.0.0.0_new/sources/hyperhdr-remote/CMakeLists.txt
+--- HyperHDR-19.0.0.0_orig/sources/hyperhdr-remote/CMakeLists.txt	2023-02-12 20:20:03.000000000 +0300
++++ HyperHDR-19.0.0.0_new/sources/hyperhdr-remote/CMakeLists.txt	2023-03-02 11:00:37.892120417 +0300
+@@ -44,17 +44,7 @@
+ 	Qt${Qt_VERSION}::Core
+ 	Qt${Qt_VERSION}::Network)
+ 
+-if(NOT WIN32)
+-	install ( TARGETS ${PROJECT_NAME} DESTINATION "share/hyperhdr/bin" COMPONENT "HyperHDR_remote" )
+-else()
+-	install ( TARGETS ${PROJECT_NAME} DESTINATION "bin" COMPONENT "HyperHDR_remote" )
+-endif()
+-
+-if(CMAKE_HOST_UNIX)
+-	install(CODE "EXECUTE_PROCESS(COMMAND ln -sf \"../share/hyperhdr/bin/${PROJECT_NAME}\" \"${CMAKE_BINARY_DIR}/symlink_${PROJECT_NAME}\" )" COMPONENT "HyperHDR_remote" )
+-	install(FILES "${CMAKE_BINARY_DIR}/symlink_${PROJECT_NAME}" DESTINATION "bin" RENAME "${PROJECT_NAME}" COMPONENT "HyperHDR_remote" )
+-	install(CODE "FILE (REMOVE ${CMAKE_BINARY_DIR}/symlink_${PROJECT_NAME} )" COMPONENT "HyperHDR_remote" )
+-endif(CMAKE_HOST_UNIX)
++install ( TARGETS ${PROJECT_NAME} DESTINATION "bin" COMPONENT "HyperHDR_remote" )
+ 
+ if(USE_PRECOMPILED_HEADERS AND COMMAND target_precompile_headers)
+     target_precompile_headers(${PROJECT_NAME} REUSE_FROM precompiled_hyperhdr_headers)
